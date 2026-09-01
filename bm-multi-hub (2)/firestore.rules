@@ -1,0 +1,156 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Hardened Global Helper Primitives
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Entity Schema Validators
+    function isValidUser(data) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 64 &&
+             data.username is string && data.username.size() > 0 && data.username.size() <= 64 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.email is string && data.email.size() <= 120 &&
+             data.role in ['super_admin', 'media_buyer', 'account_manager', 'client_viewer'] &&
+             data.assignedAssetIds is list && data.assignedAssetIds.size() <= 100 &&
+             data.createdAt is string;
+    }
+
+    function isValidClient(data) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 64 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.companyName is string && data.companyName.size() <= 120 &&
+             data.contactEmail is string && data.contactEmail.size() <= 120 &&
+             data.monthlyBudgetCap is number && data.monthlyBudgetCap >= 0 &&
+             data.currency is string && data.currency.size() <= 10 &&
+             data.createdAt is string;
+    }
+
+    function isValidAdAccount(data) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 64 &&
+             data.clientId is string && data.clientId.size() > 0 && data.clientId.size() <= 64 &&
+             data.clientName is string && data.clientName.size() <= 100 &&
+             data.accountName is string && data.accountName.size() <= 100 &&
+             data.platform in ['meta', 'google', 'tiktok', 'snapchat'] &&
+             data.accountId is string && data.accountId.size() <= 64 &&
+             data.status in ['ACTIVE', 'PAUSED', 'SPEND_LIMIT_REACHED', 'WARNING_THRESHOLD', 'DISABLED'] &&
+             data.dailyBudget is number && data.dailyBudget >= 0 &&
+             data.dailySpend is number && data.dailySpend >= 0 &&
+             data.spendLimitThreshold is number && data.spendLimitThreshold >= 0 && data.spendLimitThreshold <= 100 &&
+             data.lifetimeSpend is number && data.lifetimeSpend >= 0 &&
+             data.activeAdsCount is number && data.activeAdsCount >= 0 &&
+             data.roas is number &&
+             data.lastSyncedAt is string;
+    }
+
+    function isValidPixel(data) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 64 &&
+             data.adAccountId is string && data.adAccountId.size() <= 64 &&
+             data.clientId is string && data.clientId.size() <= 64 &&
+             data.pixelId is string && data.pixelId.size() <= 64 &&
+             data.pixelName is string && data.pixelName.size() <= 100 &&
+             data.platform in ['meta', 'google', 'tiktok', 'snapchat'] &&
+             data.status in ['healthy', 'warning', 'error', 'syncing'] &&
+             data.tokenExpiryDays is number && data.tokenExpiryDays >= 0 &&
+             data.events24hCount is number && data.events24hCount >= 0 &&
+             data.verifiedAt is string;
+    }
+
+    function isValidAlert(data) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 64 &&
+             data.adAccountId is string && data.adAccountId.size() <= 64 &&
+             data.accountName is string && data.accountName.size() <= 100 &&
+             data.clientName is string && data.clientName.size() <= 100 &&
+             data.severity in ['critical', 'warning', 'info', 'milestone'] &&
+             data.title is string && data.title.size() <= 150 &&
+             data.message is string && data.message.size() <= 500 &&
+             data.timestamp is string &&
+             data.isRead is bool &&
+             data.currentSpend is number &&
+             data.budgetLimit is number;
+    }
+
+    function isValidAuditLog(data) {
+      return data.id is string && data.id.size() > 0 && data.id.size() <= 64 &&
+             data.userId is string && data.userId.size() <= 64 &&
+             data.userName is string && data.userName.size() <= 100 &&
+             data.action is string && data.action.size() <= 100 &&
+             data.resource is string && data.resource.size() <= 100 &&
+             data.details is string && data.details.size() <= 500 &&
+             data.timestamp is string &&
+             data.status in ['SUCCESS', 'WARNING', 'FAILED'];
+    }
+
+    // Collection: Users (RBAC and Asset Assignments)
+    match /users/{userId} {
+      allow read: if true;
+      allow create: if isValidId(userId) && isValidUser(incoming());
+      allow update: if isValidId(userId) && isValidUser(incoming());
+      allow delete: if isValidId(userId);
+    }
+
+    // Collection: Clients
+    match /clients/{clientId} {
+      allow read: if true;
+      allow create: if isValidId(clientId) && isValidClient(incoming());
+      allow update: if isValidId(clientId) && isValidClient(incoming());
+      allow delete: if isValidId(clientId);
+    }
+
+    // Collection: Connected Ad Accounts
+    match /adAccounts/{accountId} {
+      allow read: if true;
+      allow create: if isValidId(accountId) && isValidAdAccount(incoming());
+      allow update: if isValidId(accountId) && isValidAdAccount(incoming());
+      allow delete: if isValidId(accountId);
+    }
+
+    // Collection: Connected Pixel Configurations & Tokens
+    match /pixels/{pixelId} {
+      allow read: if true;
+      allow create: if isValidId(pixelId) && isValidPixel(incoming());
+      allow update: if isValidId(pixelId) && isValidPixel(incoming());
+      allow delete: if isValidId(pixelId);
+    }
+
+    // Collection: Real-time Budget Alerts
+    match /alerts/{alertId} {
+      allow read: if true;
+      allow create: if isValidId(alertId) && isValidAlert(incoming());
+      allow update: if isValidId(alertId) && isValidAlert(incoming());
+      allow delete: if isValidId(alertId);
+    }
+
+    // Collection: Security Audit Logs
+    match /auditLogs/{logId} {
+      allow read: if true;
+      allow create: if isValidId(logId) && isValidAuditLog(incoming());
+      allow update: if false; // Immutable audit logs
+      allow delete: if false;
+    }
+
+    // Connection Health Probe Endpoint
+    match /test/{testId} {
+      allow read, write: if true;
+    }
+  }
+}
