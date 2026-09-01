@@ -1,0 +1,8 @@
+{
+  "name": "BM Multi-hub",
+  "description": "Business Manager Multi-hub for multi-client ad account spend monitoring, pixel health tracking, automated budget threshold alerts, and role-based asset management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

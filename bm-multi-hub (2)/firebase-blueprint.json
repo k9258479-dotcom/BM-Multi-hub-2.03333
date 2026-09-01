@@ -1,0 +1,385 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Admin and assigned users with credentials, roles, and asset permissions",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique user ID"
+        },
+        "username": {
+          "type": "string",
+          "description": "Login username"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name"
+        },
+        "email": {
+          "type": "string",
+          "description": "User email address"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["super_admin", "media_buyer", "account_manager", "client_viewer"],
+          "description": "Role determining access permissions"
+        },
+        "password": {
+          "type": "string",
+          "description": "User password for authentication"
+        },
+        "assignedAssetIds": {
+          "type": "array",
+          "description": "List of client IDs or ad account IDs assigned to this user"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp in ISO string"
+        },
+        "lastLogin": {
+          "type": "string",
+          "description": "Last login timestamp"
+        },
+        "mfaEnabled": {
+          "type": "boolean",
+          "description": "Whether MFA is active"
+        },
+        "avatarUrl": {
+          "type": "string",
+          "description": "Avatar profile URL"
+        }
+      },
+      "required": ["id", "username", "name", "email", "role", "assignedAssetIds", "createdAt"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "Client profile with monthly budget caps and managers",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique client identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Client or brand name"
+        },
+        "companyName": {
+          "type": "string",
+          "description": "Official legal company entity"
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "Primary contact email"
+        },
+        "assignedManagerId": {
+          "type": "string",
+          "description": "User ID of assigned account manager"
+        },
+        "monthlyBudgetCap": {
+          "type": "number",
+          "description": "Monthly spend budget cap"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Currency code (USD, EUR, AED, GBP)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp"
+        },
+        "tags": {
+          "type": "array",
+          "description": "Classification tags"
+        }
+      },
+      "required": ["id", "name", "companyName", "contactEmail", "monthlyBudgetCap", "currency", "createdAt"]
+    },
+    "AdAccount": {
+      "title": "AdAccount",
+      "description": "Connected ad account tracking active ads, spend limits, and metrics",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique record ID"
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Associated client ID"
+        },
+        "clientName": {
+          "type": "string",
+          "description": "Client brand name"
+        },
+        "accountName": {
+          "type": "string",
+          "description": "Ad account display name"
+        },
+        "platform": {
+          "type": "string",
+          "enum": ["meta", "google", "tiktok", "snapchat"],
+          "description": "Advertising platform"
+        },
+        "accountId": {
+          "type": "string",
+          "description": "External ad account ID e.g. act_12345"
+        },
+        "pixelId": {
+          "type": "string",
+          "description": "Associated Pixel ID"
+        },
+        "accessToken": {
+          "type": "string",
+          "description": "Pixel or marketing API access token"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Currency code"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["ACTIVE", "PAUSED", "SPEND_LIMIT_REACHED", "WARNING_THRESHOLD", "DISABLED"],
+          "description": "Account status"
+        },
+        "dailyBudget": {
+          "type": "number",
+          "description": "Allocated daily budget"
+        },
+        "dailySpend": {
+          "type": "number",
+          "description": "Current daily spend"
+        },
+        "spendLimitThreshold": {
+          "type": "number",
+          "description": "Alert threshold percentage (e.g. 80, 90, 100)"
+        },
+        "totalSpendCap": {
+          "type": "number",
+          "description": "Total spending limit"
+        },
+        "lifetimeSpend": {
+          "type": "number",
+          "description": "All time spend"
+        },
+        "activeAdsCount": {
+          "type": "number",
+          "description": "Number of currently active ads"
+        },
+        "roas": {
+          "type": "number",
+          "description": "Return on ad spend"
+        },
+        "lastSyncedAt": {
+          "type": "string",
+          "description": "Last sync timestamp"
+        },
+        "campaigns": {
+          "type": "array",
+          "description": "List of campaign objects under this ad account"
+        },
+        "assignedUserIds": {
+          "type": "array",
+          "description": "List of user IDs who have access to this account"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Internal notes"
+        }
+      },
+      "required": ["id", "clientId", "clientName", "accountName", "platform", "accountId", "currency", "status", "dailyBudget", "dailySpend", "spendLimitThreshold", "lifetimeSpend", "activeAdsCount", "roas", "lastSyncedAt"]
+    },
+    "PixelConfig": {
+      "title": "PixelConfig",
+      "description": "Pixel connection with token and health monitoring metrics",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique config ID"
+        },
+        "adAccountId": {
+          "type": "string",
+          "description": "Linked ad account ID"
+        },
+        "clientId": {
+          "type": "string",
+          "description": "Linked client ID"
+        },
+        "pixelId": {
+          "type": "string",
+          "description": "Pixel identifier"
+        },
+        "pixelName": {
+          "type": "string",
+          "description": "Pixel friendly label"
+        },
+        "platform": {
+          "type": "string",
+          "enum": ["meta", "google", "tiktok", "snapchat"],
+          "description": "Ad platform"
+        },
+        "accessToken": {
+          "type": "string",
+          "description": "API access token"
+        },
+        "tokenExpiryDays": {
+          "type": "number",
+          "description": "Days until token expiration"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["healthy", "warning", "error", "syncing"],
+          "description": "Health status"
+        },
+        "lastEventTime": {
+          "type": "string",
+          "description": "Timestamp of most recent tracked event"
+        },
+        "events24hCount": {
+          "type": "number",
+          "description": "Number of events received in the last 24 hours"
+        },
+        "verifiedAt": {
+          "type": "string",
+          "description": "Verification timestamp"
+        },
+        "lastError": {
+          "type": "string",
+          "description": "Error details if unhealthy"
+        }
+      },
+      "required": ["id", "adAccountId", "clientId", "pixelId", "pixelName", "platform", "accessToken", "tokenExpiryDays", "status", "lastEventTime", "events24hCount", "verifiedAt"]
+    },
+    "BudgetAlert": {
+      "title": "BudgetAlert",
+      "description": "Real-time alerts triggered by spend velocity or thresholds",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Alert ID"
+        },
+        "adAccountId": {
+          "type": "string",
+          "description": "Target ad account ID"
+        },
+        "accountName": {
+          "type": "string",
+          "description": "Target ad account name"
+        },
+        "clientName": {
+          "type": "string",
+          "description": "Target client name"
+        },
+        "type": {
+          "type": "string",
+          "description": "Alert classification type"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["critical", "warning", "info", "milestone"],
+          "description": "Severity level"
+        },
+        "title": {
+          "type": "string",
+          "description": "Alert heading"
+        },
+        "message": {
+          "type": "string",
+          "description": "Detailed alert body"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "ISO timestamp"
+        },
+        "isRead": {
+          "type": "boolean",
+          "description": "Read status"
+        },
+        "currentSpend": {
+          "type": "number",
+          "description": "Current spend amount"
+        },
+        "budgetLimit": {
+          "type": "number",
+          "description": "Budget limit amount"
+        }
+      },
+      "required": ["id", "adAccountId", "accountName", "clientName", "type", "severity", "title", "message", "timestamp", "isRead", "currentSpend", "budgetLimit"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable security and operational activity log",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Log ID"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Operator user ID"
+        },
+        "userName": {
+          "type": "string",
+          "description": "Operator username or name"
+        },
+        "action": {
+          "type": "string",
+          "description": "Action performed"
+        },
+        "resource": {
+          "type": "string",
+          "description": "Resource modified"
+        },
+        "details": {
+          "type": "string",
+          "description": "Event detail message"
+        },
+        "ipAddress": {
+          "type": "string",
+          "description": "Client IP address"
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "ISO timestamp"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["SUCCESS", "WARNING", "FAILED"],
+          "description": "Execution result"
+        }
+      },
+      "required": ["id", "userId", "userName", "action", "resource", "details", "timestamp", "status"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "System users with credentials, roles, and asset assignments"
+    },
+    "/clients/{clientId}": {
+      "schema": "Client",
+      "description": "Client companies and monthly budgets"
+    },
+    "/adAccounts/{accountId}": {
+      "schema": "AdAccount",
+      "description": "Connected advertising accounts with pixel IDs, spend limits, active ads, and performance metrics"
+    },
+    "/pixels/{pixelId}": {
+      "schema": "PixelConfig",
+      "description": "Pixel configurations, API tokens, and sync telemetry"
+    },
+    "/alerts/{alertId}": {
+      "schema": "BudgetAlert",
+      "description": "Threshold and spend limit notifications"
+    },
+    "/auditLogs/{logId}": {
+      "schema": "AuditLog",
+      "description": "System audit trail entries"
+    }
+  }
+}
